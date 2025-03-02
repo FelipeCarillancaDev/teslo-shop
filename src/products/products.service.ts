@@ -10,6 +10,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationDto } from '../common/dtos/pagination.dto';
+import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class ProductsService {
@@ -30,21 +32,31 @@ export class ProductsService {
     }
   }
 
-  async findAll() {
+  async findAll({ limit, offset }: PaginationDto) {
     try {
-      return this.productRepository.find();
+      return this.productRepository.find({
+        take: limit,
+        skip: offset,
+      });
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
-  async findOne(id: string) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) throw new NotFoundException(`Product #${id} not found`);
+  async findOne(term: string) {
+    let product: Product;
+    if (isUUID(term)) {
+      product = await this.productRepository.findOneBy({ id: term });
+    } else {
+      product = await this.productRepository.findOneBy({ slug: term });
+    }
+
+    if (!product) throw new NotFoundException(`Product #${term} not found`);
     return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
+    console.log(updateProductDto);
     return `This action updates a #${id} product`;
   }
 
