@@ -50,6 +50,13 @@ export class Product {
   })
   gender: string;
 
+  @Column({
+    type: 'text',
+    array: true,
+    default: [],
+  })
+  tags: string[];
+
   // antes de insertar en la base de datos se ejecutara el metodo checkSlugInsert para que se modifique el slug
   @BeforeInsert()
   checkSlugInsert() {
